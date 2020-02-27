@@ -13,7 +13,7 @@ module.exports = function (app) {
 
     app.get('/list', appController.list);
 
-    app.post('/update', appController.register);
+    app.put('/update', appController.update);
 
-    app.delete('/delete', appController.list);
+    app.delete('/delete', appController.delete);
 };

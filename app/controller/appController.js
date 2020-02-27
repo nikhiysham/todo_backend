@@ -1,7 +1,7 @@
 // Controller that accept input and performs validation  to pass to model 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../model/appModel');
+const Model = require('../model/appModel');
 const helper = require('../config/helper');
 
 exports.register = function (req, res) {
@@ -17,7 +17,7 @@ exports.register = function (req, res) {
     if (errors) {
         res.status(500).send({ error: true, message: errors });
     } else {
-        let newUser = new User({ name, email, password });
+        let newUser = new Model.User({ name, email, password });
 
         // Register with Hash password
         bcrypt.genSalt(10, function (err, salt) {
@@ -27,7 +27,7 @@ exports.register = function (req, res) {
                 if (err) return res.status(500).send({ error: err });
                 newUser.password = hash;
 
-                User.register(newUser, function (err, id) {
+                Model.User.register(newUser, function (err, id) {
                     if (err) return res.status(500).send({ error: err });
                     res.status(200).send({ success: true, data: { id }, message: 'You are now registered and can sign in.' });
                 });
@@ -39,7 +39,7 @@ exports.register = function (req, res) {
 exports.login = function (req, res) {
     const { email, password } = req.body;
 
-    User.findByEmail(email, function (err, user) {
+    Model.User.findByEmail(email, function (err, user) {
         if (err) return res.status(500).send({ error: 'Error on the server.' });
         if (!user) return res.status(404).send({ error: 'No user found.' });
         if (!user[0].password) return res.status(404).send({ error: 'No user found.' });
@@ -64,7 +64,7 @@ exports.login = function (req, res) {
 exports.list = function (req, res) {
     const { name } = req.query;
 
-    User.list(name, function (err, users) {
+    Model.User.list(name, function (err, users) {
         if (!users) return res.status(404).send({ error: 'No user found.' });
 
         res.status(200).send({ success: true, data: users });
@@ -72,7 +72,7 @@ exports.list = function (req, res) {
 }
 
 exports.update = function (req, res) {
-    const { id } = req.body;
+    const { id, name } = req.body;
 
     req.checkBody('id', 'Id is required').notEmpty();
     req.checkBody('name', 'Name is required').notEmpty();
@@ -82,16 +82,16 @@ exports.update = function (req, res) {
     if (errors) {
         res.status(500).send({ error: true, message: errors });
     } else {
-        let newUser = new User({ name });
+        let newUser = new Model.UserUpdate({ id: id, name: name });
 
-        User.update(newUser, id, function (err, users) {
+        Model.User.update(newUser, id, function (err, users) {
             res.status(200).send({ success: true, data: users });
         });
     }
 }
 
 exports.delete = function (req, res) {
-    const { id } = req.query;
+    const { id } = req.body;
 
     req.checkBody('id', 'Id is required').notEmpty();
 
@@ -100,7 +100,7 @@ exports.delete = function (req, res) {
     if (errors) {
         res.status(500).send({ error: true, message: errors });
     } else {
-        User.delete(id, function (err, users) {
+        Model.User.delete(id, function (err, users) {
             res.status(200).send({ success: true, data: users });
         });
     }
